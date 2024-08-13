@@ -1,81 +1,47 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>
-      DJI Tello Controller
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding">
-  <ion-button expand="full" color="primary" (click)="takeOff()">
-    Take Off
-  </ion-button>
-  <ion-button expand="full" color="danger" (click)="land()">
-    Land
-  </ion-button>
-  <ion-button expand="full" color="secondary" (click)="sendCommand('command')">
-    Send Command Mode
-  </ion-button>
+  <div class="controller-container">
+    <div class="top-right">
+      <ion-button color="warning" shape="round" (click)="sendCommand('command')">
+        <ion-icon name="wifi" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('up')">
-          Up
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('left')">
-          Left
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('forward')">
-          Forward
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('right')">
-          Right
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('back')">
-          Back
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button expand="full" color="medium" (click)="move('down')">
-          Down
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <div class="top-left">
+      <ion-button color="success" shape="round" (click)="takeOff()">
+        <ion-icon name="airplane" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button color="danger" shape="round" (click)="land()">
+        <ion-icon name="power" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Drone Status</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Baterai: {{ battery }}%</p>
-      <p>Tinggi: {{ height }} cm</p>
-      <p>Kecepatan: {{ speed }} cm/s</p>
-      <p>Temperatur: {{ temperature }}°C</p>
-    </ion-card-content>
-  </ion-card>
+    <div class="top-info">
+      <div class="battery-status">
+        <ion-label>Status Baterai: {{ battery !== null ? battery + '%' : 'Memuat...' }}</ion-label>
+      </div>
+      <div class="connection-status" [ngClass]="{'connected': connection === 'Connected', 'disconnected': connection === 'Disconnected'}">
+        <ion-label>Status Koneksi: {{ connection }}</ion-label>
+      </div>
+    </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Camera Feed</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <video #videoPlayer width="100%" autoplay></video>
-    </ion-card-content>
-  </ion-card>
+    <div class="joystick-group">
+      <div class="joystick-container">
+        <div class="joystick-label top-label">Maju</div>
+        <div id="movement-joystick" class="joystick"></div>
+        <div class="joystick-label bottom-label">Mundur</div>
+        <div class="joystick-label left-label">Kiri</div>
+        <div class="joystick-label right-label">Kanan</div>
+      </div>
+
+      <div class="joystick-container">
+        <div class="joystick-label top-label">Naik</div>
+        <div id="directional-joystick" class="joystick"></div>
+        <div class="joystick-label bottom-label">Turun</div>
+      </div>
+    </div>
+    
+    <div class="video-container">
+      <video id="drone-video" autoplay></video>
+    </div>
+  </div>
 </ion-content>

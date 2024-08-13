@@ -1,27 +1,185 @@
-#container {
-  text-align: center;
+ion-content {
+  --background: #fff; /* Latar belakang konten putih */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Mengatur konten agar berada di tengah */
+  width: 100%;
+  height: 100%;
+}
 
+/* Controller Container */
+.controller-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Pusatkan semua konten secara vertikal */
+}
+
+/* Background Container */
+.background-container {
   position: absolute;
+  top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  z-index: 1;
+
+  &.camera-on {
+    background-color: transparent;
+  }
+}
+
+/* Background Video */
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+
+  &.camera-on {
+    display: block;
+  }
+}
+
+/* Foreground Content */
+.foreground-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Top Right Buttons */
+.top-right {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* Top Left Buttons */
+.top-left {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Jarak antar tombol */
+}
+
+/* Joystick Group */
+.joystick-group {
+  position: absolute;
+  bottom: 30px; /* Jarak dari bagian bawah */
+  left: 50%;
+  transform: translateX(-50%); /* Menempatkan joystick di tengah horizontal */
+  display: flex;
+  justify-content: space-between; /* Memisahkan joystick kiri dan kanan */
+  width: 70%;
+  max-width: 600px; /* Menetapkan lebar maksimum untuk responsivitas */
+}
+
+/* Joystick Container */
+.joystick-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Joystick Labels */
+.joystick-label {
+  position: absolute;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Specific Label Positions */
+.top-label {
+  top: -20px;
+}
+
+.bottom-label {
+  bottom: -20px;
+}
+
+.left-label {
+  left: -40px;
   top: 50%;
   transform: translateY(-50%);
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.right-label {
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
+/* Joystick Styling */
+.joystick {
+  width: 125px;
+  height: 125px;
+  background-color: #eee;
+  border-radius: 50%;
 }
 
-#container a {
-  text-decoration: none;
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Pastikan video berada di latar belakang */
+}
+
+#drone-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info Status (Battery and Connection) */
+.top-info {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 10px;
+  z-index: 2;
+}
+
+/* Status Baterai dan Koneksi */
+.battery-status, .connection-status {
+  font-size: 14px;
+  color: #333;
+  margin-right: 20px; /* Jarak antara status baterai dan koneksi */
+}
+
+.connection-status {
+  font-size: 14px;
+  color: red; /* Warna default untuk status disconnected */
+}
+
+.connection-status.connected {
+  color: green; /* Warna untuk status connected */
+}
+
+.connection-status.disconnected {
+  color: red; /* Warna untuk status disconnected */
+}
+
+.battery-status {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
 }
