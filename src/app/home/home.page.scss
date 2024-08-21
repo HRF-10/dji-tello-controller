@@ -33,18 +33,6 @@ ion-content {
   }
 }
 
-/* Background Video */
-.background-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
-
-  &.camera-on {
-    display: block;
-  }
-}
-
 /* Foreground Content */
 .foreground-content {
   position: relative;
@@ -92,6 +80,9 @@ ion-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 125px;
+  height: 125px;
+  pointer-events: auto; /* Aktifkan pointer untuk joystick */
 }
 
 /* Joystick Labels */
@@ -99,27 +90,26 @@ ion-content {
   position: absolute;
   font-size: 14px;
   color: #333;
-}
 
-/* Specific Label Positions */
-.top-label {
-  top: -20px;
-}
+  &.top-label {
+    top: -30px;
+  }
 
-.bottom-label {
-  bottom: -20px;
-}
+  &.bottom-label {
+    bottom: -30px;
+  }
 
-.left-label {
-  left: -40px;
-  top: 50%;
-  transform: translateY(-50%);
-}
+  &.left-label {
+    left: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 
-.right-label {
-  right: -40px;
-  top: 50%;
-  transform: translateY(-50%);
+  &.right-label {
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 /* Joystick Styling */
@@ -128,21 +118,6 @@ ion-content {
   height: 125px;
   background-color: #eee;
   border-radius: 50%;
-}
-
-.video-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Pastikan video berada di latar belakang */
-}
-
-#drone-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 /* Info Status (Battery and Connection) */
@@ -160,26 +135,57 @@ ion-content {
 
 /* Status Baterai dan Koneksi */
 .battery-status, .connection-status {
-  font-size: 14px;
+  font-size: 10px;
   color: #333;
-  margin-right: 20px; /* Jarak antara status baterai dan koneksi */
+  margin-right: 10px; /* Jarak antara status baterai dan koneksi */
+
+  &.connected {
+    color: green; /* Warna untuk status connected */
+  }
+
+  &.disconnected {
+    color: red; /* Warna untuk status disconnected */
+  }
 }
 
-.connection-status {
-  font-size: 14px;
-  color: red; /* Warna default untuk status disconnected */
+/* Background Video */
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+
+  &.camera-on {
+    display: block;
+  }
 }
 
-.connection-status.connected {
-  color: green; /* Warna untuk status connected */
+/* Video Container */
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Pastikan video berada di latar belakang */
+  overflow: hidden; /* Hindari overflow jika diperlukan */
 }
 
-.connection-status.disconnected {
-  color: red; /* Warna untuk status disconnected */
+/* Video Element */
+#drone-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Pastikan video memenuhi area tanpa mengubah rasio aspek */
 }
 
-.battery-status {
-  font-size: 14px;
-  font-weight: bold;
-  color: #333;
+.camera-toggle {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2;
+
+  ion-button {
+    --background: rgba(255, 255, 255, 0.7); /* Latar belakang semi-transparan */
+    --color: #333; /* Warna ikon */
+  }
 }

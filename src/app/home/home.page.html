@@ -40,8 +40,16 @@
       </div>
     </div>
     
-    <div class="video-container">
-      <video id="drone-video" autoplay></video>
+    <!-- Tombol Kamera -->
+    <div class="camera-toggle">
+      <ion-button fill="clear" size="small" (click)="toggleCamera()">
+        <ion-icon [name]="cameraOn ? 'eye-off' : 'eye'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="video-container" [class.video-off]="!cameraOn">
+      <!-- <video id="drone-video" autoplay *ngIf="cameraOn"></video> -->
+      <canvas id="drone-video" *ngIf="cameraOn"></canvas>
     </div>
   </div>
 </ion-content>

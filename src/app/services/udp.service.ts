@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 declare var chrome: any;
+declare var JSMpeg: any;
 
 @Injectable({
   providedIn: 'root',
@@ -8,15 +9,20 @@ declare var chrome: any;
 export class TelloService {
   private telloAddress = '192.168.10.1';
   private telloPort = 8889;
+  private videoPort = 11111;
   private socketId: number | null = null;
+  private videoSocketId: number | null = null;
 
   private batteryStatusCallback: (status: number) => void = () => {};
   private lastResponseTime: number = 0;
   battery: number = 0;
 
+  private player: any;
+
   constructor() {
     document.addEventListener('deviceready', () => {
       this.createSocket();
+      this.createVideoSocket();
     }, false);
   }
 
@@ -45,23 +51,76 @@ export class TelloService {
     }
   }
 
+  createVideoSocket() {
+    if (chrome && chrome.sockets && chrome.sockets.udp) {
+      chrome.sockets.udp.create({}, (socketInfo: any) => {
+        this.videoSocketId = socketInfo.socketId;
+        chrome.sockets.udp.bind(this.videoSocketId, '0.0.0.0', this.videoPort, (result: any) => {
+          if (result < 0) {
+            console.error('Gagal bind video socket:', chrome.runtime.lastError);
+          } else {
+            console.log('Socket video berhasil di-bind ke port:', this.videoPort);
+          }
+        });
+      });
+    }
+  }
+
   startReceiving() {
     if (this.socketId !== null) {
       chrome.sockets.udp.onReceive.addListener((info: any) => {
         if (info.socketId === this.socketId) {
-          const message = new TextDecoder().decode(new Uint8Array(info.data));
-          console.log('Pesan diterima:', message);
-          // Asumsi pesan hanya berupa angka yang merepresentasikan tingkat baterai
-          const batteryLevel = parseInt(message.trim(), 10);
-          if (!isNaN(batteryLevel)) {
-            this.battery = batteryLevel;
-            console.log('Tingkat baterai:', this.battery);
+          try {
+            const dataArray = new Uint8Array(info.data);
+            console.log('Data Array:', dataArray);
 
-            // Panggil callback dengan tingkat baterai terbaru
-            if (this.batteryStatusCallback) {
-              this.batteryStatusCallback(this.battery);
+            const message = new TextDecoder().decode(dataArray);
+            console.log('Pesan diterima:', message);
+
+            // Verifikasi bahwa message adalah string
+            if (typeof message === 'string') {
+              const batteryLevel = parseInt(message.trim(), 10);
+              if (!isNaN(batteryLevel)) {
+                this.battery = batteryLevel;
+                console.log('Tingkat baterai:', this.battery);
+                if (this.batteryStatusCallback) {
+                  this.batteryStatusCallback(this.battery);
+                }
+                this.lastResponseTime = Date.now();
+              }
+            } else {
+              console.error('Data yang diterima bukan string:', message);
             }
-            this.lastResponseTime = Date.now();
+          } catch (error) {
+            console.error('Kesalahan saat memproses data:', error);
+          }
+        }
+      });
+    }
+  }
+
+  startVideoReceiving() {
+    this.sendCommand('streamon');
+
+    if (this.videoSocketId !== null) {
+      chrome.sockets.udp.onReceive.addListener((info: any) => {
+        if (info.socketId === this.videoSocketId) {
+          try {
+            const dataArray = new Uint8Array(info.data);
+            console.log('Data video diterima:', dataArray);
+            const dataBlob = new Blob([dataArray], { type: 'video/mp4' });
+            const url = URL.createObjectURL(dataBlob);
+
+            if (!this.player) {
+              const canvas = document.getElementById('drone-video') as HTMLCanvasElement;
+              if (canvas) {
+                this.player = new JSMpeg.Player(url, { canvas: canvas, autoplay: true });
+              }
+            } else {
+              this.player.write(dataArray);
+            }
+          } catch (error) {
+            console.error('Kesalahan saat memproses video data:', error);
           }
         }
       });
@@ -87,8 +146,15 @@ export class TelloService {
   }
 
   checkConnectionStatus(): boolean {
-    // Jika lastResponseTime lebih dari 5 detik yang lalu, dianggap disconnected
     const currentTime = Date.now();
-    return (currentTime - this.lastResponseTime) < 2000;
+    return (currentTime - this.lastResponseTime) < 3000;
+  }
+
+  startVideoStream() {
+    this.sendCommand('streamon');
+  }
+
+  stopVideoStream() {
+    this.sendCommand('streamoff');
   }
 }

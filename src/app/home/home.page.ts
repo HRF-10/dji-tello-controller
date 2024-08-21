@@ -16,6 +16,8 @@ export class HomePage implements AfterViewInit, OnInit {
   battery: number | null = null;
   connection: string = 'Disconnected';
 
+  cameraOn = true;
+
   constructor(private telloService: TelloService, private zone: NgZone) {}
 
   ngAfterViewInit() {
@@ -25,6 +27,7 @@ export class HomePage implements AfterViewInit, OnInit {
   ngOnInit() {
     this.updateBatteryStatus();
     this.updateConnectionStatus();
+    
     setInterval(() => {
       this.updateBatteryStatus();
       this.updateConnectionStatus();
@@ -33,7 +36,7 @@ export class HomePage implements AfterViewInit, OnInit {
 
   updateBatteryStatus() {
     this.telloService.getBatteryStatus((status: number) => {
-      console.log('Battery Status:', status); // Log untuk memastikan nilai
+      console.log('Battery Status:', status);
       this.zone.run(() => {
         this.battery = status;
       });
@@ -60,6 +63,7 @@ export class HomePage implements AfterViewInit, OnInit {
         position: { left: '50%', bottom: '62px' },
         color: 'red',
         size: 125,
+        dynamicPage: true, // needed because of vue
       });
 
       this.directionalJoystick = nipplejs.create({
@@ -68,6 +72,7 @@ export class HomePage implements AfterViewInit, OnInit {
         position: { left: '50%', bottom: '62px' },
         color: 'blue',
         size: 125,
+        dynamicPage: true, // needed because of vue
       });
 
       this.movementJoystick.on('move', (_evt: any, data: any) => {
@@ -143,5 +148,15 @@ export class HomePage implements AfterViewInit, OnInit {
   async land() {
     console.log('Perintah Landing dikirim');
     await this.sendCommand('land');
+  }
+
+  toggleCamera() {
+    this.cameraOn = !this.cameraOn;
+    if (this.cameraOn) {
+      this.telloService.startVideoStream();
+      this.telloService.startVideoReceiving();
+    } else {
+      this.telloService.stopVideoStream();
+    }
   }
 }

@@ -36,7 +36,9 @@
               "src/global.scss",
               "src/theme/variables.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/js/jsmpeg-player.umd.min.js"
+            ]
           },
           "configurations": {
             "production": {
