@@ -22,6 +22,7 @@ export class HomePage implements AfterViewInit, OnInit {
 
   ngAfterViewInit() {
     this.initJoysticks();
+    this.telloService.startReceivingVideo(); // Memulai penerimaan video setelah inisialisasi komponen
   }
 
   ngOnInit() {
@@ -63,7 +64,7 @@ export class HomePage implements AfterViewInit, OnInit {
         position: { left: '50%', bottom: '62px' },
         color: 'red',
         size: 125,
-        dynamicPage: true, // needed because of vue
+        dynamicPage: true,
       });
 
       this.directionalJoystick = nipplejs.create({
@@ -72,7 +73,7 @@ export class HomePage implements AfterViewInit, OnInit {
         position: { left: '50%', bottom: '62px' },
         color: 'blue',
         size: 125,
-        dynamicPage: true, // needed because of vue
+        dynamicPage: true,
       });
 
       this.movementJoystick.on('move', (_evt: any, data: any) => {
@@ -154,7 +155,7 @@ export class HomePage implements AfterViewInit, OnInit {
     this.cameraOn = !this.cameraOn;
     if (this.cameraOn) {
       this.telloService.startVideoStream();
-      this.telloService.startVideoReceiving();
+      this.telloService.startReceivingVideo();
     } else {
       this.telloService.stopVideoStream();
     }

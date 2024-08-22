@@ -30,6 +30,7 @@
     "ionicons": "^7.0.0",
     "jsmpeg": "^1.0.0",
     "jsmpeg-player": "^3.0.3",
+    "mp4box": "^0.5.2",
     "nipplejs": "^0.10.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

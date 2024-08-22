@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 declare var chrome: any;
-declare var JSMpeg: any;
+declare var Player: any;  // Broadway.js Player
 
 @Injectable({
   providedIn: 'root',
@@ -12,20 +12,20 @@ export class TelloService {
   private videoPort = 11111;
   private socketId: number | null = null;
   private videoSocketId: number | null = null;
-
+  private player: any;
   private batteryStatusCallback: (status: number) => void = () => {};
   private lastResponseTime: number = 0;
   battery: number = 0;
-
-  private player: any;
 
   constructor() {
     document.addEventListener('deviceready', () => {
       this.createSocket();
       this.createVideoSocket();
+      window.addEventListener('resize', this.updateCanvasSize.bind(this));
     }, false);
   }
 
+  // Membuat socket untuk komunikasi kontrol drone
   createSocket() {
     if (chrome && chrome.sockets && chrome.sockets.udp) {
       chrome.sockets.udp.create({}, (socketInfo: any) => {
@@ -38,6 +38,7 @@ export class TelloService {
     }
   }
 
+  // Mengikat socket ke alamat dan port
   bindSocket() {
     if (this.socketId !== null) {
       chrome.sockets.udp.bind(this.socketId, '0.0.0.0', 0, (result: any) => {
@@ -51,6 +52,7 @@ export class TelloService {
     }
   }
 
+  // Membuat socket untuk video stream
   createVideoSocket() {
     if (chrome && chrome.sockets && chrome.sockets.udp) {
       chrome.sockets.udp.create({}, (socketInfo: any) => {
@@ -60,12 +62,61 @@ export class TelloService {
             console.error('Gagal bind video socket:', chrome.runtime.lastError);
           } else {
             console.log('Socket video berhasil di-bind ke port:', this.videoPort);
+            this.initializePlayer();
+            this.startReceivingVideo();
           }
         });
       });
     }
   }
 
+  // Menginisialisasi Broadway.js player
+  initializePlayer() {
+    const canvas = document.getElementById('drone-video') as HTMLCanvasElement;
+    if (canvas) {
+      // Atur ukuran canvas
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      this.player = new Player({
+        useWorker: true,
+        workerFile: '../../assets/js/Broadway/Player/Decoder.js',
+        webgl: false,
+        size: { width: canvas.width, height: canvas.height },
+      });
+
+      canvas.parentNode?.replaceChild(this.player.canvas, canvas);
+    } else {
+      console.error('Canvas video tidak ditemukan.');
+    }
+  }
+
+  // Mulai menerima video stream
+  startReceivingVideo() {
+    if (this.videoSocketId !== null) {
+      chrome.sockets.udp.onReceive.addListener((info: any) => {
+        if (info.socketId === this.videoSocketId) {
+          try {
+            const dataArray = new Uint8Array(info.data);
+            console.log('Data video diterima:', dataArray);
+
+            if (this.player) {
+              console.log('Mengirim data ke player');
+              this.player.decode(dataArray); // Dekode data video menggunakan Broadway.js player
+            } else {
+              console.error('Player tidak diinisialisasi.');
+            }
+          } catch (error) {
+            console.error('Kesalahan saat memproses data video:', error);
+          }
+        }
+      });
+
+      this.sendCommand('streamon');
+    }
+  }
+
+  // Mulai menerima data dari drone
   startReceiving() {
     if (this.socketId !== null) {
       chrome.sockets.udp.onReceive.addListener((info: any) => {
@@ -77,7 +128,6 @@ export class TelloService {
             const message = new TextDecoder().decode(dataArray);
             console.log('Pesan diterima:', message);
 
-            // Verifikasi bahwa message adalah string
             if (typeof message === 'string') {
               const batteryLevel = parseInt(message.trim(), 10);
               if (!isNaN(batteryLevel)) {
@@ -99,34 +149,7 @@ export class TelloService {
     }
   }
 
-  startVideoReceiving() {
-    this.sendCommand('streamon');
-
-    if (this.videoSocketId !== null) {
-      chrome.sockets.udp.onReceive.addListener((info: any) => {
-        if (info.socketId === this.videoSocketId) {
-          try {
-            const dataArray = new Uint8Array(info.data);
-            console.log('Data video diterima:', dataArray);
-            const dataBlob = new Blob([dataArray], { type: 'video/mp4' });
-            const url = URL.createObjectURL(dataBlob);
-
-            if (!this.player) {
-              const canvas = document.getElementById('drone-video') as HTMLCanvasElement;
-              if (canvas) {
-                this.player = new JSMpeg.Player(url, { canvas: canvas, autoplay: true });
-              }
-            } else {
-              this.player.write(dataArray);
-            }
-          } catch (error) {
-            console.error('Kesalahan saat memproses video data:', error);
-          }
-        }
-      });
-    }
-  }
-
+  // Mengirim perintah ke drone
   sendCommand(command: string) {
     if (this.socketId !== null) {
       const data = new TextEncoder().encode(command);
@@ -140,21 +163,37 @@ export class TelloService {
     }
   }
 
+  // Mendapatkan status baterai
   getBatteryStatus(callback: (status: number) => void) {
     this.batteryStatusCallback = callback;
     this.sendCommand('battery?');
   }
 
+  // Memeriksa status koneksi drone
   checkConnectionStatus(): boolean {
     const currentTime = Date.now();
     return (currentTime - this.lastResponseTime) < 3000;
   }
 
+  // Memulai streaming video
   startVideoStream() {
     this.sendCommand('streamon');
   }
 
+  // Menghentikan streaming video
   stopVideoStream() {
     this.sendCommand('streamoff');
+  }
+
+  // Menyesuaikan ukuran canvas saat ukuran jendela berubah
+  updateCanvasSize() {
+    const canvas = document.getElementById('drone-video') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (this.player) {
+        this.player.setSize(canvas.width, canvas.height);
+      }
+    }
   }
 }
