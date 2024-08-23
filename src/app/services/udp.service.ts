@@ -82,6 +82,7 @@ export class TelloService {
         useWorker: true,
         workerFile: '../../assets/js/Broadway/Player/Decoder.js',
         webgl: false,
+        wasm: '../../assets/js/Broadway/Decoder/js/avc.wasm', // Tambahkan ini untuk menggunakan Wasm
         size: { width: canvas.width, height: canvas.height },
       });
 

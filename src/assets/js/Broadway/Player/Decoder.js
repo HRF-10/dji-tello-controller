@@ -41,9 +41,6 @@
     };
   };
   
-  
-  
-  
   var getModule = function(par_broadwayOnHeadersDecoded, par_broadwayOnPictureDecoded){
     
     
