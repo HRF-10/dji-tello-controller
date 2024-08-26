@@ -38,7 +38,6 @@ export class TelloService {
     }
   }
 
-  // Mengikat socket ke alamat dan port
   bindSocket() {
     if (this.socketId !== null) {
       chrome.sockets.udp.bind(this.socketId, '0.0.0.0', 0, (result: any) => {
@@ -149,8 +148,7 @@ export class TelloService {
       });
     }
   }
-
-  // Mengirim perintah ke drone
+  
   sendCommand(command: string) {
     if (this.socketId !== null) {
       const data = new TextEncoder().encode(command);
